@@ -1,0 +1,59 @@
+# シークレット
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.p8
+*.jks
+
+# OS・一時ファイル
+.DS_Store
+Thumbs.db
+*.log
+tmp/
+scratch/
+
+# Rust / Tauri ビルド成果物
+companion/src-tauri/target/
+companion/src-tauri/gen/
+
+# Node.js / TypeScript
+node_modules/
+dist/
+dist-ssr/
+.next/
+.nuxt/
+.turbo/
+coverage/
+*.tsbuildinfo
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# 中間生成物（動画ファイル名等の個人情報を含む可能性）
+data/sessions/*
+!data/sessions/.gitkeep
+
+# 内部ドキュメント（公開不要）
+docs/
+
+# エディタ・AI ツール
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.claude/
+.codex/
+.gemini/
+.cursor/
+.agent/
+.antigravity-server/

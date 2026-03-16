@@ -1,0 +1,50 @@
+# シークレット（最重要: コンテナイメージへの焼き込み防止）
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# フロントエンド（sidecar のみ必要）
+companion/
+dist/
+blog/
+image/
+poc/
+samplevideo/
+
+# Python 開発
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# テスト・ドキュメント
+tests/
+docs/
+specs/
+*.md
+!README.md
+
+# Git
+.git/
+.gitignore
+
+# AI ツール
+.claude/
+.codex/
+.gemini/
+.cursor/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# セッションデータ
+data/sessions/*.json
+
+# ビルド設定
+cloudbuild.yaml
+.gcloudignore

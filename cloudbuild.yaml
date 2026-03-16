@@ -1,0 +1,19 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/replection-sidecar', '.']
+  - name: gcr.io/cloud-builders/docker
+    args: ['push', 'gcr.io/$PROJECT_ID/replection-sidecar']
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - replection-sidecar
+      - --image=gcr.io/$PROJECT_ID/replection-sidecar
+      - --region=asia-northeast1
+      - --platform=managed
+      - --allow-unauthenticated
+      - --port=8765
+      - --memory=512Mi
+      - --timeout=300
+      - --set-env-vars=GEMINI_API_KEY=$_GEMINI_API_KEY,RIOT_PUUID=$_RIOT_PUUID,RIOT_GAME_NAME=$_RIOT_GAME_NAME,RIOT_TAG_LINE=$_RIOT_TAG_LINE

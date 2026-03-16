@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1200, initial-scale=1.0">
+<title>RePlection - Architecture</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Sora:wght@300;400;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0A0C14;
+    color: #E2E8F0;
+    font-family: 'Sora', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+
+  .diagram {
+    width: 1160px;
+    height: 720px;
+    position: relative;
+    background:
+      radial-gradient(ellipse 800px 400px at 50% 50%, rgba(125,211,252,0.03) 0%, transparent 70%),
+      radial-gradient(ellipse 400px 300px at 15% 50%, rgba(110,231,183,0.03) 0%, transparent 70%),
+      radial-gradient(ellipse 400px 300px at 85% 50%, rgba(200,155,60,0.03) 0%, transparent 70%);
+  }
+
+  /* ── Title ── */
+  .title {
+    position: absolute;
+    top: 16px;
+    left: 32px;
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+  .title h1 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #C89B3C;
+    letter-spacing: 0.5px;
+  }
+  .title span {
+    font-size: 11px;
+    font-weight: 300;
+    color: #64748B;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ── Phase Labels ── */
+  .phase-label {
+    position: absolute;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 3px;
+  }
+  .phase-1-label {
+    top: 62px; left: 50%;
+    transform: translateX(-50%);
+    color: #7DD3FC;
+    background: rgba(125,211,252,0.08);
+    border: 1px solid rgba(125,211,252,0.15);
+  }
+  .phase-2-label {
+    top: 395px; left: 50%;
+    transform: translateX(-50%);
+    color: #C89B3C;
+    background: rgba(200,155,60,0.08);
+    border: 1px solid rgba(200,155,60,0.15);
+  }
+
+  /* ── Divider ── */
+  .divider {
+    position: absolute;
+    top: 368px;
+    left: 40px;
+    right: 40px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(200,155,60,0.2) 20%, rgba(200,155,60,0.2) 80%, transparent);
+  }
+
+  /* ── Nodes ── */
+  .node {
+    position: absolute;
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-size: 12px;
+    font-weight: 400;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    backdrop-filter: blur(4px);
+    transition: box-shadow 0.3s ease;
+  }
+  .node:hover {
+    box-shadow: 0 0 20px rgba(255,255,255,0.05);
+  }
+  .node-title {
+    font-weight: 600;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .node-sub {
+    font-size: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    color: #94A3B8;
+    font-weight: 300;
+  }
+  .node-icon {
+    font-size: 14px;
+  }
+
+  /* ── Node Variants ── */
+  .node-user {
+    background: rgba(110,231,183,0.06);
+    border: 1px solid rgba(110,231,183,0.2);
+  }
+  .node-user .node-title { color: #6EE7B7; }
+
+  .node-gemini {
+    background: rgba(125,211,252,0.06);
+    border: 1px solid rgba(125,211,252,0.2);
+  }
+  .node-gemini .node-title { color: #7DD3FC; }
+
+  .node-cloud {
+    background: rgba(200,155,60,0.06);
+    border: 1px solid rgba(200,155,60,0.2);
+  }
+  .node-cloud .node-title { color: #C89B3C; }
+
+  .node-data {
+    background: rgba(148,163,184,0.04);
+    border: 1px solid rgba(148,163,184,0.12);
+  }
+  .node-data .node-title { color: #CBD5E1; }
+
+  /* ── SVG Arrows ── */
+  svg.arrows {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+  }
+  .arrow-line {
+    fill: none;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+  }
+  .arrow-blue { stroke: rgba(125,211,252,0.35); }
+  .arrow-gold { stroke: rgba(200,155,60,0.35); }
+  .arrow-green { stroke: rgba(110,231,183,0.35); }
+  .arrow-gray { stroke: rgba(148,163,184,0.2); }
+
+  .arrow-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    fill: #64748B;
+  }
+
+  /* ── Column Headers ── */
+  .col-header {
+    position: absolute;
+    top: 28px;
+    font-size: 9px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 400;
+    color: #475569;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+
+  /* ── Function Call Badge ── */
+  .fn-badge {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: #C89B3C;
+    background: rgba(200,155,60,0.1);
+    border: 1px solid rgba(200,155,60,0.2);
+    border-radius: 3px;
+    padding: 2px 6px;
+    margin-top: 2px;
+  }
+
+  /* ── Subtle animation ── */
+  @keyframes pulseGlow {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 0.7; }
+  }
+  .glow-dot {
+    position: absolute;
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    animation: pulseGlow 3s ease-in-out infinite;
+  }
+</style>
+</head>
+<body>
+<div class="diagram">
+
+  <!-- Title -->
+  <div class="title">
+    <h1>RePlection</h1>
+    <span>System Architecture</span>
+  </div>
+
+  <!-- Column Headers -->
+  <div class="col-header" style="left: 60px; top: 46px;">&#x1F5A5; Desktop App</div>
+  <div class="col-header" style="left: 50%; transform: translateX(-50%);">Processing Pipeline</div>
+  <div class="col-header" style="right: 60px; text-align: right;">&#x2601; Cloud APIs</div>
+
+  <!-- Phase Labels -->
+  <div class="phase-label phase-1-label">PHASE 1 : PRE-ANALYSIS</div>
+  <div class="phase-label phase-2-label">PHASE 2 : LIVE COACHING</div>
+
+  <!-- Divider -->
+  <div class="divider"></div>
+
+  <!-- ═══════════ PHASE 1 NODES ═══════════ -->
+
+  <!-- Video File -->
+  <div class="node node-user" style="top: 100px; left: 40px; width: 170px;">
+    <div class="node-title">Video File</div>
+    <div class="node-sub">LoL Replay Recording</div>
+    <div class="node-sub">.mp4 (660MB)</div>
+  </div>
+
+  <!-- Riot API -->
+  <div class="node node-cloud" style="top: 100px; right: 40px; width: 190px;">
+    <div class="node-title">Riot Match-V5 API</div>
+    <div class="node-sub">Team Comp / Timeline</div>
+    <div class="node-sub">Kill Events / Objectives</div>
+  </div>
+
+  <!-- Stage A -->
+  <div class="node node-data" style="top: 100px; left: 380px; width: 200px;">
+    <div class="node-title">Stage A: Riot Grounding</div>
+    <div class="node-sub">SceneCandidate[] generation</div>
+    <div class="node-sub">Facts = SSoT (not Gemini)</div>
+  </div>
+
+  <!-- Gemini API (Video) -->
+  <div class="node node-gemini" style="top: 210px; right: 40px; width: 190px;">
+    <div class="node-title">Gemini 3.1 Pro</div>
+    <div class="node-sub">Video Analysis</div>
+    <div class="node-sub">Scene-by-scene "why"</div>
+  </div>
+
+  <!-- Stage B -->
+  <div class="node node-data" style="top: 210px; left: 380px; width: 200px;">
+    <div class="node-title">Stage B: Vision Analysis</div>
+    <div class="node-sub">Facts + Clip → Gemini</div>
+    <div class="node-sub">"Why did this death happen?"</div>
+  </div>
+
+  <!-- Coaching Context -->
+  <div class="node node-data" style="top: 300px; left: 380px; width: 200px;">
+    <div class="node-title">Stage C: Synthesis</div>
+    <div class="node-sub">CoachingContext JSON</div>
+    <div class="node-sub">system_instruction (3.5KB)</div>
+  </div>
+
+  <!-- Sidecar (Phase 1) -->
+  <div class="node node-user" style="top: 255px; left: 40px; width: 170px;">
+    <div class="node-title">Sidecar</div>
+    <div class="node-sub">Python FastAPI</div>
+    <div class="node-sub">Pipeline Orchestrator</div>
+  </div>
+
+  <!-- ═══════════ PHASE 2 NODES ═══════════ -->
+
+  <!-- Companion App -->
+  <div class="node node-user" style="top: 420px; left: 40px; width: 170px;">
+    <div class="node-title">Companion App</div>
+    <div class="node-sub">Tauri (Rust) + TypeScript</div>
+    <div class="node-sub">Particle Orb UI</div>
+    <div class="node-sub">Push-to-Talk / Barge-in</div>
+  </div>
+
+  <!-- User -->
+  <div class="node node-user" style="top: 560px; left: 40px; width: 170px;">
+    <div class="node-title">Player</div>
+    <div class="node-sub">Voice conversation</div>
+    <div class="node-sub">"Why did I die at 17m?"</div>
+  </div>
+
+  <!-- Gemini Live API -->
+  <div class="node node-gemini" style="top: 430px; right: 40px; width: 190px;">
+    <div class="node-title">Gemini Live API</div>
+    <div class="node-sub">Native Audio Model</div>
+    <div class="node-sub">Bidirectional Voice</div>
+    <div class="fn-badge">Function Calling</div>
+  </div>
+
+  <!-- RealtimeEngine -->
+  <div class="node node-data" style="top: 430px; left: 380px; width: 200px;">
+    <div class="node-title">RealtimeEngine</div>
+    <div class="node-sub">WebSocket ↔ Gemini Live</div>
+    <div class="node-sub">Audio PCM streaming</div>
+    <div class="node-sub">system_instruction injection</div>
+  </div>
+
+  <!-- LoL Replay -->
+  <div class="node node-user" style="top: 580px; left: 380px; width: 200px;">
+    <div class="node-title">LoL Replay Client</div>
+    <div class="node-sub">localhost:2999</div>
+    <div class="fn-badge">seek / pause / slow_mo / camera</div>
+  </div>
+
+  <!-- Cloud Run -->
+  <div class="node node-cloud" style="top: 570px; right: 40px; width: 190px;">
+    <div class="node-title">Google Cloud Run</div>
+    <div class="node-sub">Sidecar deployment</div>
+    <div class="node-sub">asia-northeast1</div>
+  </div>
+
+  <!-- ═══════════ SVG ARROWS ═══════════ -->
+  <svg class="arrows" viewBox="0 0 1160 720">
+    <defs>
+      <marker id="ah-blue" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+        <path d="M0,0 L6,3 L0,6" fill="none" stroke="rgba(125,211,252,0.5)" stroke-width="1"/>
+      </marker>
+      <marker id="ah-gold" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+        <path d="M0,0 L6,3 L0,6" fill="none" stroke="rgba(200,155,60,0.5)" stroke-width="1"/>
+      </marker>
+      <marker id="ah-green" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+        <path d="M0,0 L6,3 L0,6" fill="none" stroke="rgba(110,231,183,0.5)" stroke-width="1"/>
+      </marker>
+      <marker id="ah-gray" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+        <path d="M0,0 L6,3 L0,6" fill="none" stroke="rgba(148,163,184,0.3)" stroke-width="1"/>
+      </marker>
+    </defs>
+
+    <!-- Phase 1: Video → Sidecar → Stage A -->
+    <path class="arrow-line arrow-green" d="M210,140 L375,130" marker-end="url(#ah-green)"/>
+    <text class="arrow-label" x="270" y="125">upload</text>
+
+    <!-- Phase 1: Riot API → Stage A -->
+    <path class="arrow-line arrow-gold" d="M930,130 L585,125" marker-end="url(#ah-gold)"/>
+    <text class="arrow-label" x="720" y="117">match facts</text>
+
+    <!-- Phase 1: Stage A → Stage B -->
+    <path class="arrow-line arrow-gray" d="M480,165 L480,205" marker-end="url(#ah-gray)"/>
+    <text class="arrow-label" x="488" y="190">candidates</text>
+
+    <!-- Phase 1: Stage B → Gemini API -->
+    <path class="arrow-line arrow-blue" d="M585,240 L930,235" marker-end="url(#ah-blue)"/>
+    <text class="arrow-label" x="720" y="228">clip + facts</text>
+
+    <!-- Phase 1: Gemini → Stage B -->
+    <path class="arrow-line arrow-blue" d="M930,255 L585,250" marker-end="url(#ah-blue)"/>
+    <text class="arrow-label" x="720" y="268">analysis</text>
+
+    <!-- Phase 1: Stage B → Stage C -->
+    <path class="arrow-line arrow-gray" d="M480,275 L480,295" marker-end="url(#ah-gray)"/>
+
+    <!-- Phase 1: Sidecar → Stage A/B -->
+    <path class="arrow-line arrow-green" d="M210,285 L375,270" marker-end="url(#ah-green)"/>
+    <text class="arrow-label" x="260" y="270">orchestrate</text>
+
+    <!-- Phase 2: Player → Companion -->
+    <path class="arrow-line arrow-green" d="M125,555 L125,520" marker-end="url(#ah-green)"/>
+
+    <!-- Phase 2: Companion → RealtimeEngine -->
+    <path class="arrow-line arrow-green" d="M210,465 L375,460" marker-end="url(#ah-green)"/>
+    <text class="arrow-label" x="260" y="452">audio PCM</text>
+
+    <!-- Phase 2: RealtimeEngine → Gemini Live -->
+    <path class="arrow-line arrow-blue" d="M585,455 L930,455" marker-end="url(#ah-blue)"/>
+    <text class="arrow-label" x="720" y="448">voice stream</text>
+
+    <!-- Phase 2: Gemini Live → RealtimeEngine -->
+    <path class="arrow-line arrow-blue" d="M930,475 L585,475" marker-end="url(#ah-blue)"/>
+    <text class="arrow-label" x="720" y="490">audio response</text>
+
+    <!-- Phase 2: Gemini Live → Function Call → Replay -->
+    <path class="arrow-line arrow-gold" d="M930,500 Q750,560 585,610" marker-end="url(#ah-gold)"/>
+    <text class="arrow-label" x="760" y="545">function call</text>
+
+    <!-- Phase 2: Stage C → RealtimeEngine (system_instruction) -->
+    <path class="arrow-line arrow-gray" d="M480,355 L480,425" marker-end="url(#ah-gray)" stroke-dasharray="4,4"/>
+    <text class="arrow-label" x="488" y="395">sys_instruction</text>
+
+    <!-- Phase 2: RealtimeEngine → Companion (audio back) -->
+    <path class="arrow-line arrow-green" d="M375,480 L210,480" marker-end="url(#ah-green)"/>
+    <text class="arrow-label" x="260" y="497">AI voice</text>
+  </svg>
+
+  <!-- Glow dots for visual interest -->
+  <div class="glow-dot" style="top: 130px; left: 376px; background: #6EE7B7;"></div>
+  <div class="glow-dot" style="top: 240px; right: 234px; background: #7DD3FC;"></div>
+  <div class="glow-dot" style="top: 455px; right: 234px; background: #7DD3FC; animation-delay: 1s;"></div>
+  <div class="glow-dot" style="top: 610px; left: 376px; background: #C89B3C; animation-delay: 2s;"></div>
+
+</div>
+</body>
+</html>

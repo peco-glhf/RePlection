@@ -1,0 +1,46 @@
+# シークレット（P0: .env をビルドコンテキストから除外）
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Tauri / フロントエンド（Cloud Run では不要）
+companion/
+dist/
+blog/
+image/
+poc/
+samplevideo/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+
+# 開発ファイル
+tests/
+docs/
+*.md
+!README.md
+
+# AI ツール設定
+.claude/
+.codex/
+.gemini/
+.cursor/
+
+# セッションデータ
+data/sessions/*.json
+
+# ビルド設定（ビルド後不要）
+cloudbuild.yaml

@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RePlection</title>
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <div id="app">
+      <!-- Draggable header (frameless window) -->
+      <div class="drag-region" data-tauri-drag-region>
+        <span class="app-title" data-tauri-drag-region>✦ RePlection</span>
+        <div class="window-controls">
+          <button class="win-btn" id="minBtn" title="Minimize">─</button>
+          <button class="win-btn close-btn" id="closeBtn" title="Close">✕</button>
+        </div>
+      </div>
+
+      <!-- State orb -->
+      <!-- Particle orb inspired by Nate Wiley -->
+      <div class="orb-section">
+        <div class="orb-wrapper">
+          <div class="orb orb--idle" id="orb">
+            <div class="orb-glow"></div>
+            <div class="particle-wrap" id="particleWrap"></div>
+          </div>
+          <div class="orb-ring" id="orbRing"></div>
+        </div>
+        <div class="state-label" id="stateLabel">Idle</div>
+      </div>
+
+      <!-- Push-to-talk -->
+      <div class="ptt-area">
+        <button class="btn ptt-btn" id="pttBtn" disabled>Hold SPACE to talk</button>
+        <div class="ptt-hint" id="pttHint">You can interrupt at any time</div>
+      </div>
+
+      <!-- Video select -->
+      <div class="video-select">
+        <button class="btn video-btn" id="videoBtn">Select Video</button>
+        <div class="video-info" id="videoInfo">
+          <span class="video-name" id="videoName"></span>
+          <button class="video-clear" id="videoClearBtn" title="Clear">✕</button>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="controls">
+        <button class="btn start-btn" id="startBtn" disabled>▶ ANALYZE</button>
+        <button class="btn stop-btn" id="stopBtn" disabled>■ STOP</button>
+      </div>
+
+      <!-- Status bar -->
+      <div class="status-bar">
+        <div class="status-dot" id="statusDot"></div>
+        <span class="status-text" id="statusText">Connecting...</span>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
