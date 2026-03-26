@@ -306,10 +306,17 @@ async def _run_live_session(context_path: str) -> None:
     """Live 会話セッション（バックグラウンド）: DIALOGUE → IDLE."""
     global _coach_state, _dialogue_state, _engine, _session_task
 
-    logger.info("Live セッション開始: %s", context_path)
+    logger.info("Live セッション開始")
     try:
+        # パストラバーサル対策: data/sessions/ 配下の .json のみ許可
+        sessions_dir = Path("data/sessions").resolve()
+        target = Path(context_path).resolve(strict=True)
+        target.relative_to(sessions_dir)  # 配下でなければ ValueError
+        if not target.is_file() or target.suffix != ".json":
+            raise ValueError("不正なファイル指定")
+
         json_str = await asyncio.to_thread(
-            Path(context_path).read_text, encoding="utf-8"
+            target.read_text, encoding="utf-8"
         )
         ctx = CoachingContext.from_json(json_str)
         system_instruction = context_to_system_instruction(ctx)
@@ -441,7 +448,7 @@ if __name__ == "__main__":
     port = int(os.getenv("PORT", "8765"))
     uvicorn.run(
         "sidecar.main:app",
-        host="0.0.0.0",
+        host=os.getenv("HOST", "127.0.0.1"),
         port=port,
         reload=False,
         log_level="info",

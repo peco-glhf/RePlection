@@ -506,7 +506,9 @@ class TestRunLiveSession:
             system_instruction=run_stage4_coach(analysis, obs),
         )
 
-        context_file = Path(tmp_path) / "ctx.json" if isinstance(tmp_path, str) else Path("/tmp/test_ctx.json")
+        sessions_dir = Path("data/sessions")
+        sessions_dir.mkdir(parents=True, exist_ok=True)
+        context_file = sessions_dir / "test_ctx.json"
         context_file.write_text(ctx.to_json(), encoding="utf-8")
 
         class DummyEngine:
@@ -522,6 +524,54 @@ class TestRunLiveSession:
         await main._run_live_session(str(context_file))
 
         assert main._coach_state == CoachState.IDLE
+
+    @pytest.mark.asyncio
+    async def test_rejects_path_outside_sessions_dir(self) -> None:
+        """data/sessions/ 外のパスを拒否する."""
+        main._coach_state = CoachState.DIALOGUE
+        await main._run_live_session("/tmp/malicious.json")
+        assert main._coach_state == CoachState.ERROR
+
+    @pytest.mark.asyncio
+    async def test_rejects_sessions_prefix_dir(self) -> None:
+        """data/sessions2/ のような prefix 一致ディレクトリを拒否する."""
+        from pathlib import Path
+
+        fake_dir = Path("data/sessions2")
+        fake_dir.mkdir(parents=True, exist_ok=True)
+        fake_file = fake_dir / "trick.json"
+        fake_file.write_text("{}", encoding="utf-8")
+
+        main._coach_state = CoachState.DIALOGUE
+        await main._run_live_session(str(fake_file))
+        assert main._coach_state == CoachState.ERROR
+
+        # クリーンアップ
+        fake_file.unlink()
+        fake_dir.rmdir()
+
+    @pytest.mark.asyncio
+    async def test_rejects_non_json_file(self) -> None:
+        """data/sessions/ 配下でも .json 以外を拒否する."""
+        from pathlib import Path
+
+        sessions_dir = Path("data/sessions")
+        sessions_dir.mkdir(parents=True, exist_ok=True)
+        txt_file = sessions_dir / "test.txt"
+        txt_file.write_text("not json", encoding="utf-8")
+
+        main._coach_state = CoachState.DIALOGUE
+        await main._run_live_session(str(txt_file))
+        assert main._coach_state == CoachState.ERROR
+
+        txt_file.unlink()
+
+    @pytest.mark.asyncio
+    async def test_rejects_traversal_with_dotdot(self) -> None:
+        """.. を含むパスを拒否する."""
+        main._coach_state = CoachState.DIALOGUE
+        await main._run_live_session("data/sessions/../../etc/passwd")
+        assert main._coach_state == CoachState.ERROR
 
 
 class TestPushToTalkEndpoints:

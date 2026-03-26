@@ -23,6 +23,7 @@ COPY --chown=appuser:appuser data/ data/
 USER appuser
 
 ENV PORT=8765
+ENV HOST=0.0.0.0
 
 EXPOSE 8765
 
