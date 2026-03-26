@@ -13,12 +13,15 @@ RUN apt-get update \
 COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev
 
-# 非 root ユーザー作成
-RUN adduser --disabled-password --no-create-home appuser
+# 非 root ユーザー作成（uv キャッシュ用にホームディレクトリが必要）
+RUN adduser --disabled-password appuser
 
 # アプリケーションコードをコピー（非 root 所有）
 COPY --chown=appuser:appuser sidecar/ sidecar/
 COPY --chown=appuser:appuser data/ data/
+
+# .venv の所有権を appuser に変更（uv run で書き込みが必要）
+RUN chown -R appuser:appuser /app/.venv
 
 USER appuser
 
